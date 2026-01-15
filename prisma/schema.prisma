@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  telegramId String   @unique
+  name       String?
+  phone      String?
+  role       String   @default("CLIENT") // CLIENT, ADMIN, ORDER_RECEIVER, ORDER_PICKER, COURIER
+  orders     Order[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Store {
+  id                Int                @id @default(autoincrement())
+  name              String
+  address           String
+  inventories       ProductInventory[]
+  orders            Order[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model Category {
+  id          Int        @id @default(autoincrement())
+  name        String
+  parentId    Int?
+  parent      Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[] @relation("CategoryToCategory")
+  products    Product[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Product {
+  id          Int                @id @default(autoincrement())
+  name        String
+  code        String             @unique
+  imageUrl    String?            @map("image_url")
+  categoryId  Int?
+  category    Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  inventories ProductInventory[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@map("products")
+}
+
+model ProductInventory {
+  id         Int      @id @default(autoincrement())
+  productId  Int      @map("product_id")
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  storeId    Int      @map("store_id")
+  store      Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  price      Float
+  currency   String   // SUM or USD
+  stockCount Int      @default(0) @map("stock_count")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([productId, storeId])
+  @@map("product_inventories")
+}
+
+model Order {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeId         Int      @map("store_id")
+  store           Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  totalPrice      Float    @map("total_price")
+  status          String   @default("PENDING") // PENDING, ACCEPTED, PREPARING, READY_FOR_DELIVERY, SHIPPING, COMPLETED, CANCELLED
+  items           Json     // Array of products with quantities and prices
+  address         String?  // Delivery address
+  location        String?  // Location coordinates or description
+  receiverId      Int?     @map("receiver_id") // Order receiver who accepted
+  pickerId        Int?     @map("picker_id")   // Order picker who prepared
+  courierId       Int?     @map("courier_id")  // Courier who delivered
+  statusHistory   Json?    @map("status_history") // Array of status changes with timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("orders")
+}
