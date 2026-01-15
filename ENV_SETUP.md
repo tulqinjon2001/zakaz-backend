@@ -4,7 +4,10 @@ Create a `.env` file in the root directory with the following content:
 
 ```env
 # Database Connection
-DATABASE_URL="postgresql://user:password@localhost:5432/zakaz_bot?schema=public"
+# Local PostgreSQL:
+# DATABASE_URL="postgresql://user:password@localhost:5432/zakaz_bot?schema=public"
+# Railway PostgreSQL (Cloud):
+DATABASE_URL="postgresql://postgres:cVQztGIviTnYeipZZiVAyhWdUWLXUcLv@yamabiko.proxy.rlwy.net:22469/railway?schema=public"
 
 # Server Configuration
 PORT=3000
@@ -26,6 +29,7 @@ ADMIN_PANEL_URL=https://zakaz-admin.vercel.app
 
 ## Database URL Format
 
+### Local PostgreSQL:
 Replace the placeholders in `DATABASE_URL`:
 - `user`: Your PostgreSQL username
 - `password`: Your PostgreSQL password
@@ -36,6 +40,19 @@ Example:
 ```env
 DATABASE_URL="postgresql://postgres:mypassword@localhost:5432/zakaz_bot?schema=public"
 ```
+
+### Railway PostgreSQL (Cloud):
+Railway provides a PostgreSQL database URL in the following format:
+```env
+DATABASE_URL="postgresql://postgres:password@host:port/railway?schema=public"
+```
+
+**Current Railway Database URL:**
+```env
+DATABASE_URL="postgresql://postgres:cVQztGIviTnYeipZZiVAyhWdUWLXUcLv@yamabiko.proxy.rlwy.net:22469/railway?schema=public"
+```
+
+**Note:** Make sure to add `?schema=public` at the end of the Railway URL for Prisma to work correctly.
 
 ## Setup Steps
 
